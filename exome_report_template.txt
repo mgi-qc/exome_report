@@ -1,20 +1,22 @@
 Data quality report for work order: ${WOID}
 
 QC Pass Metrics
-PCT_TARGET_20X (minimum requirement):  0.70 
-Additional Metrics: 
-No other metric required/reviewed for assignment of QC pass/fail judgement
+PCT_TARGET_20X (minimum requirement):  0.70
+Additional Metrics:
+${ADDITIONAL_METRICS}
 
 
 SEQUENCING_NOTE: https://confluence.ris.wustl.edu/pages/viewpage.action?spaceKey=AD&title=WorkOrder+${WOID}
+${SEQUENCING_NOTE}
 
-Number of Flow Cell Lanes or Desired Coverage:
-Special Instructions:
  
 QC Summary Report:
 Number of samples QC'ed = ${SAMPLE_NUMBER}
 Number of samples that pass required metrics for PCT_TARGET_20X= ${PASS_SAMPLES}
 Number of samples that fail required metric for PCT_TARGET_20X= ${ALN_FAIL}
+
+Number of samples that pass additional metric MEAN_TARGET_COVERAGE = ${MEAN_TAR_COV_PASS}
+Number of samples that fail additional metric MEAN_TARGET_COVERAGE = ${MEAN_TAR_COV_FAIL}
 
 QC Summary Statistics:
 AVERAGE PCT_TARGET_BASES_20X= ${PCT_TARGET_BASES_20X}
@@ -27,10 +29,6 @@ AVERAGE PCT_EXC_DUPE= ${PCT_EXC_DUPE}
 AVERAGE PERCENT_DUPLICATION = ${PERCENT_DUPLICATION}
  
 Data Transfer Directory =
-cd to parent data dir
-cd to model_data 
-mkdir data_transfer/${WOID}
-genome model cwl-pipeline prep-for-transfer --md5sum --directory=full_path../data_transfer/${WOID}  --builds ${BUILDS} or model_groups.project.id=${WOID}
  
 Additional Comments:
 
