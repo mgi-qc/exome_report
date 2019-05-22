@@ -37,7 +37,6 @@ with open('/gscmnt/gc2783/qc/GMSworkorders/reports/exome_report_template.txt', '
     template = fh.read()
     template_file = Template(template)
 
-
 filename_list = []
 
 for file in metrics_files:
@@ -62,7 +61,8 @@ for file in metrics_files:
     #Haploid prompt
 
     while not ad_met_check:
-        ad_met_in = input("Would you like to require additional metrics for {}? y/n: ".format(file_name))
+        ad_met_in = input("\nConfluence link:\nhttps://confluence.ris.wustl.edu/pages/viewpage.action?spaceKey=AD&title=WorkOrder+{}"
+                          " \nWould you like to require additional metrics for {}? y/n: ".format(file_name, file_name))
 
         if ad_met_in is 'y':
             ad_met_check = True
@@ -77,9 +77,9 @@ for file in metrics_files:
                 elif float(mt_in) > 0:
                     mt_value = float(mt_in)
                     mt_check = True
+                    metrics_tracked.extend(['MEAN_TAR_COV_PASS', 'MEAN_TAR_COV_FAIL'])
                     print('MEAN_TARGET_COVERAGE minimum set to {}'.format(mt_value))
                     add_met = 'MEAN_TARGET_COVERAGE (minimum requirement) : {}'.format(mt_value)
-                    metrics_tracked.extend(['MEAN_TAR_COV_PASS', 'MEAN_TAR_COV_FAIL'])
                 else:
                     print('Skipping MEAN_TARGET_COVERAGE')
                     mt_check = True
@@ -175,8 +175,6 @@ for file in metrics_files:
 
                 if seq_in is 'y':
                     seq_check = True
-                    print('See https://confluence.ris.wustl.edu/pages/viewpage.action?spaceKey=AD&title=WorkOrder+{} for notes;'
-                          ' enter into console, and enter double return when finished: '.format(file_name))
                     seq_notes = []
                     while True:
                         note_line = input()
@@ -192,6 +190,14 @@ for file in metrics_files:
                 else:
                     print('Please enter y or n')
             test = '\n'.join(seq_notes)
+
+            if 'MEAN_TAR_COV_PASS' in template_file_dict:
+                MEAN_TAR_PASS = template_file_dict['MEAN_TAR_COV_PASS']
+                MEAN_TAR_FAIL = template_file_dict['MEAN_TAR_COV_FAIL']
+            else:
+                MEAN_TAR_PASS = 'NA'
+                MEAN_TAR_FAIL = 'NA'
+
             #write report
             with open(report_outfile, 'w', encoding='utf-8') as fhr:
                 fhr.write(template_file.substitute(WOID=template_file_dict['WOID'],
@@ -207,10 +213,11 @@ for file in metrics_files:
                                                    PCT_EXC_OFF_TARGET=tot_pct_exc_off / count,
                                                    PCT_EXC_DUPE=tot_pct_exc_dup / count,
                                                    PERCENT_DUPLICATION=avg_per_dup,
+                                                   MEAN_TAR_COV_PASS= MEAN_TAR_PASS,
+                                                   MEAN_TAR_COV_FAIL= MEAN_TAR_FAIL,
                                                    SEQUENCING_NOTE = test,
-                                                   MEAN_TAR_COV_PASS = template_file_dict['MEAN_TAR_COV_PASS'],
-                                                   MEAN_TAR_COV_FAIL = template_file_dict['MEAN_TAR_COV_FAIL'],
                                                    RESULTS_SPREADSHEET = SSheet_outfile))
+
             filename_list.append(file_name)
 
             builds = ','.join(last_succeeded_build_id)
@@ -221,8 +228,9 @@ for file in metrics_files:
                       ' --directory=full_path../data_transfer/{}  --builds {}'
                       ' or model_groups.project.id {}'.format(template_file_dict['WOID'], template_file_dict['WOID'],
                                                               builds, template_file_dict['WOID']))
+            print('------------------------')
         else:
             print('\nNo report generated for {}; PCT_TARGET_BASES_20X not found.'.format(file))
-
+            print('------------------------')
 for file in filename_list:
     print('Report for {} generated.'.format(file))
