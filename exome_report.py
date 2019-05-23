@@ -21,6 +21,39 @@ def is_number(s):
     except ValueError:
         return False
 
+
+def data_dir_check(dir_list, woid, date):
+    """Create and return transfer directory if 'model' found in dir path."""
+
+    # return NA if no transfer dir found
+    transfer_dir = 'NA'
+
+    # iterate over data dirs
+    for directory in dir_list:
+        # if model found, create transfer dir and return path
+        if os.path.isdir(directory) and 'model' in directory:
+
+            dir_path_items = directory.split('/')
+
+            for no, d in enumerate(dir_path_items):
+
+                if 'model' in d:
+
+                    model_directory = '/'.join(dir_path_items[:no + 1]) + '/'
+                    transfer_dir = os.path.join(model_directory, 'data_transfer/{}_{}/'.format(woid, date))
+
+                    if os.path.isdir(transfer_dir):
+                        print('Transfer Directory already exists: {}'.format(transfer_dir))
+                        return transfer_dir
+
+                    if os.path.isdir(model_directory) and not os.path.isdir(transfer_dir):
+                        os.mkdir(transfer_dir)
+                        print('Data transfer directory created:\n{}'.format(transfer_dir))
+                        return transfer_dir
+
+    return transfer_dir
+
+
 mm_dd_yy = datetime.datetime.now().strftime("%m%d%y")
 
 #Check for metrics file;
@@ -30,19 +63,19 @@ else:
     metrics_files = glob.glob('*.cwl.metrics.*.tsv')
 
 #Check, open, and create template file using Template;
-if not os.path.isfile('/gscmnt/gc2783/qc/GMSworkorders/reports/exome_report_template.txt'):
+if not os.path.isfile('/gscmnt/gc2783/qc/GMSworkorders/Exome/stats/dir_test/exome_report_template.txt'):
     sys.exit('Template file not found.')
 
-with open('/gscmnt/gc2783/qc/GMSworkorders/reports/exome_report_template.txt', 'r', encoding='utf-8') as fh:
+with open('/gscmnt/gc2783/qc/GMSworkorders/Exome/stats/dir_test/exome_report_template.txt', 'r', encoding='utf-8') as fh:
     template = fh.read()
     template_file = Template(template)
-
 
 filename_list = []
 
 for file in metrics_files:
 
     PCT_20X_check = False
+    data_directories = []
 
     #Ini. outgoing files;
     file_name = file.split('.')[0]
@@ -62,7 +95,8 @@ for file in metrics_files:
     #Haploid prompt
 
     while not ad_met_check:
-        ad_met_in = input("Would you like to require additional metrics for {}? y/n: ".format(file_name))
+        ad_met_in = input("\nConfluence link:\nhttps://confluence.ris.wustl.edu/pages/viewpage.action?spaceKey=AD&title=WorkOrder+{}"
+                          " \nWould you like to require additional metrics for {}? y/n: ".format(file_name, file_name))
 
         if ad_met_in is 'y':
             ad_met_check = True
@@ -77,9 +111,9 @@ for file in metrics_files:
                 elif float(mt_in) > 0:
                     mt_value = float(mt_in)
                     mt_check = True
+                    metrics_tracked.extend(['MEAN_TAR_COV_PASS', 'MEAN_TAR_COV_FAIL'])
                     print('MEAN_TARGET_COVERAGE minimum set to {}'.format(mt_value))
                     add_met = 'MEAN_TARGET_COVERAGE (minimum requirement) : {}'.format(mt_value)
-                    metrics_tracked.extend(['MEAN_TAR_COV_PASS', 'MEAN_TAR_COV_FAIL'])
                 else:
                     print('Skipping MEAN_TARGET_COVERAGE')
                     mt_check = True
@@ -89,7 +123,6 @@ for file in metrics_files:
             ad_met_check = True
         else:
             print('Please enter y or n')
-
 
     for metric in metrics_tracked:
         template_file_dict[metric] = 0
@@ -115,6 +148,7 @@ for file in metrics_files:
         for line in metrics_dict:
 
             template_file_dict['WOID'] = line['WorkOrder']
+            data_directories.append(line['data_directory'])
 
 
             #Check metrics based on Metrics File;
@@ -151,14 +185,10 @@ for file in metrics_files:
                     tot_per_dup += float(line['PERCENT_DUPLICATION'])
                     per_dup_count += 1
 
-
-
                 last_succeeded_build_id.append(line['last_succeeded_build'])
                 #fill line in results;
                 ofd.writerow(line)
                 count += 1
-
-
 
             else:
                 PCT_20X_check = True
@@ -175,8 +205,6 @@ for file in metrics_files:
 
                 if seq_in is 'y':
                     seq_check = True
-                    print('See https://confluence.ris.wustl.edu/pages/viewpage.action?spaceKey=AD&title=WorkOrder+{} for notes;'
-                          ' enter into console, and enter double return when finished: '.format(file_name))
                     seq_notes = []
                     while True:
                         note_line = input()
@@ -191,7 +219,16 @@ for file in metrics_files:
                     print('Skipping SEQUENCING_NOTE')
                 else:
                     print('Please enter y or n')
-            test = '\n'.join(seq_notes)
+
+            if 'MEAN_TAR_COV_PASS' in template_file_dict:
+                MEAN_TAR_PASS = template_file_dict['MEAN_TAR_COV_PASS']
+                MEAN_TAR_FAIL = template_file_dict['MEAN_TAR_COV_FAIL']
+            else:
+                MEAN_TAR_PASS = 'NA'
+                MEAN_TAR_FAIL = 'NA'
+
+            transfer_data_directory = data_dir_check(data_directories, template_file_dict['WOID'], mm_dd_yy)
+
             #write report
             with open(report_outfile, 'w', encoding='utf-8') as fhr:
                 fhr.write(template_file.substitute(WOID=template_file_dict['WOID'],
@@ -207,22 +244,25 @@ for file in metrics_files:
                                                    PCT_EXC_OFF_TARGET=tot_pct_exc_off / count,
                                                    PCT_EXC_DUPE=tot_pct_exc_dup / count,
                                                    PERCENT_DUPLICATION=avg_per_dup,
-                                                   SEQUENCING_NOTE = test,
-                                                   MEAN_TAR_COV_PASS = template_file_dict['MEAN_TAR_COV_PASS'],
-                                                   MEAN_TAR_COV_FAIL = template_file_dict['MEAN_TAR_COV_FAIL'],
-                                                   RESULTS_SPREADSHEET = SSheet_outfile))
+                                                   MEAN_TAR_COV_PASS=MEAN_TAR_PASS,
+                                                   MEAN_TAR_COV_FAIL=MEAN_TAR_FAIL,
+                                                   SEQUENCING_NOTE='\n'.join(seq_notes),
+                                                   TRANSFER_DIR=transfer_data_directory,
+                                                   RESULTS_SPREADSHEET=SSheet_outfile))
+
             filename_list.append(file_name)
 
             builds = ','.join(last_succeeded_build_id)
 
             with open('{}.Data_transfer_help.txt'.format(template_file_dict['WOID']), 'w') as df:
-                df.write('Data Transfer Directory =\ncd to parent data dir\ncd to model_data'
-                      '\nmkdir data_transfer/{}\ngenome model cwl-pipeline prep-for-transfer --md5sum'
-                      ' --directory=full_path../data_transfer/{}  --builds {}'
-                      ' or model_groups.project.id {}'.format(template_file_dict['WOID'], template_file_dict['WOID'],
-                                                              builds, template_file_dict['WOID']))
+                df.write('Data Transfer Directory ={td}\ncd to parent data dir\ncd to model_data'
+                      '\nmkdir data_transfer/{w}\nTransfer Commands:\n\ngenome model cwl-pipeline prep-for-transfer --md5sum'
+                      ' --directory={td}  --builds {b}\n\n'
+                      'genome model cwl-pipeline prep-for-transfer --md5sum'
+                      ' --directory={td} model_groups.project.id={w}'.format(td=transfer_data_directory, w=template_file_dict['WOID'], b=builds,))
+            print('------------------------')
         else:
             print('\nNo report generated for {}; PCT_TARGET_BASES_20X not found.'.format(file))
-
+            print('------------------------')
 for file in filename_list:
     print('Report for {} generated.'.format(file))
