@@ -13,6 +13,10 @@ import argparse
 import subprocess
 from string import Template
 
+parser = argparse.ArgumentParser()
+parser.add_argument('-nod', help='Turn off directory creation', action='store_true')
+args = parser.parse_args()
+
 
 def is_number(s):
     try:
@@ -44,10 +48,14 @@ def data_dir_check(dir_list, woid, date):
 
                     if os.path.isdir(transfer_dir):
                         print('Transfer Directory already exists: {}'.format(transfer_dir))
-                        return transfer_dir
+                        return 'NA'
 
                     if os.path.isdir(model_directory) and not os.path.isdir(transfer_dir):
-                        os.mkdir(transfer_dir)
+                        try:
+                            os.mkdir(transfer_dir)
+                        except OSError:
+                            # raise OSError("Can't create destination directory {}!".format(transfer_dir))
+                            return 'NA'
                         print('Data transfer directory created:\n{}'.format(transfer_dir))
                         return transfer_dir
 
@@ -63,10 +71,10 @@ else:
     metrics_files = glob.glob('*.cwl.metrics.*.tsv')
 
 #Check, open, and create template file using Template;
-if not os.path.isfile('/gscmnt/gc2783/qc/GMSworkorders/Exome/stats/dir_test/exome_report_template.txt'):
+if not os.path.isfile('/gscmnt/gc2783/qc/GMSworkorders/reports/exome_report_template.txt'):
     sys.exit('Template file not found.')
 
-with open('/gscmnt/gc2783/qc/GMSworkorders/Exome/stats/dir_test/exome_report_template.txt', 'r', encoding='utf-8') as fh:
+with open('/gscmnt/gc2783/qc/GMSworkorders/reports/exome_report_template.txt', 'r', encoding='utf-8') as fh:
     template = fh.read()
     template_file = Template(template)
 
@@ -227,7 +235,9 @@ for file in metrics_files:
                 MEAN_TAR_PASS = 'NA'
                 MEAN_TAR_FAIL = 'NA'
 
-            transfer_data_directory = data_dir_check(data_directories, template_file_dict['WOID'], mm_dd_yy)
+            transfer_data_directory = 'NA'
+            if not args.nod:
+                transfer_data_directory = data_dir_check(data_directories, template_file_dict['WOID'], mm_dd_yy)
 
             #write report
             with open(report_outfile, 'w', encoding='utf-8') as fhr:
@@ -254,12 +264,12 @@ for file in metrics_files:
 
             builds = ','.join(last_succeeded_build_id)
 
-            with open('{}.Data_transfer_help.txt'.format(template_file_dict['WOID']), 'w') as df:
+            with open('{}.Data_transfer_help.{}.txt'.format(template_file_dict['WOID'], mm_dd_yy), 'w') as df:
                 df.write('Data Transfer Directory ={td}\ncd to parent data dir\ncd to model_data'
                       '\nmkdir data_transfer/{w}\nTransfer Commands:\n\ngenome model cwl-pipeline prep-for-transfer --md5sum'
                       ' --directory={td}  --builds {b}\n\n'
                       'genome model cwl-pipeline prep-for-transfer --md5sum'
-                      ' --directory={td} model_groups.project.id={w}'.format(td=transfer_data_directory, w=template_file_dict['WOID'], b=builds,))
+                      ' --directory={td} model_groups.project.id={w}\n'.format(td=transfer_data_directory, w=template_file_dict['WOID'], b=builds,))
   
             print('------------------------')
         else:
