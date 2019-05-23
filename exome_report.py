@@ -260,6 +260,7 @@ for file in metrics_files:
                       ' --directory={td}  --builds {b}\n\n'
                       'genome model cwl-pipeline prep-for-transfer --md5sum'
                       ' --directory={td} model_groups.project.id={w}'.format(td=transfer_data_directory, w=template_file_dict['WOID'], b=builds,))
+  
             print('------------------------')
         else:
             print('\nNo report generated for {}; PCT_TARGET_BASES_20X not found.'.format(file))
