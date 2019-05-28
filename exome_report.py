@@ -78,6 +78,7 @@ with open('/gscmnt/gc2783/qc/GMSworkorders/reports/exome_report_template.txt', '
     template = fh.read()
     template_file = Template(template)
 
+
 filename_list = []
 
 for file in metrics_files:
@@ -216,7 +217,7 @@ for file in metrics_files:
                     seq_notes = []
                     while True:
                         note_line = input()
-                        if note_line:
+                        if note_line != 'q':
                             seq_notes.append(note_line)
                         else:
                             break
