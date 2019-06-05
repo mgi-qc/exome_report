@@ -87,8 +87,9 @@ for file in metrics_files:
 
     #Ini. outgoing files;
     file_name = file.split('.')[0]
-    SSheet_outfile = '{}.cwl.results.{}.tsv'.format(file_name, mm_dd_yy)
-    report_outfile = '{}.cwl.report.{}.txt'.format(file_name, mm_dd_yy)
+    file_date = file.split('.')[-2]
+    SSheet_outfile = '{}.cwl.results.{}.tsv'.format(file_name, file_date)
+    report_outfile = '{}.cwl.report.{}.txt'.format(file_name, file_date)
 
     # Ini. dicts
     results = {}
@@ -124,6 +125,7 @@ for file in metrics_files:
                     add_met = 'MEAN_TARGET_COVERAGE (minimum requirement) : {}'.format(mt_value)
                 else:
                     print('Skipping MEAN_TARGET_COVERAGE')
+                    add_met = 'No other metric required/reviewed for assignment of QC pass/fail judgement'
                     mt_check = True
         elif ad_met_in is 'n':
             print('Skipping addtional metrics')
@@ -212,11 +214,12 @@ for file in metrics_files:
                 seq_in = input('Would you like to add a SEQUENCING_NOTE? y/n: ')
 
                 if seq_in is 'y':
+                    print('Enter "return q return" to exit SEQUENCING_NOTE prompt.')
                     seq_check = True
                     seq_notes = []
                     while True:
                         note_line = input()
-                        if note_line:
+                        if note_line != 'q':
                             seq_notes.append(note_line)
                         else:
                             break
@@ -258,13 +261,14 @@ for file in metrics_files:
                                                    MEAN_TAR_COV_FAIL=MEAN_TAR_FAIL,
                                                    SEQUENCING_NOTE='\n'.join(seq_notes),
                                                    TRANSFER_DIR=transfer_data_directory,
-                                                   RESULTS_SPREADSHEET=SSheet_outfile))
+                                                   RESULTS_SPREADSHEET=SSheet_outfile,
+                                                   REPORT_FILE = report_outfile))
 
             filename_list.append(file_name)
 
             builds = ','.join(last_succeeded_build_id)
 
-            with open('{}.Data_transfer_help.{}.txt'.format(template_file_dict['WOID'], mm_dd_yy), 'w') as df:
+            with open('{}.Data_transfer_help.{}.txt'.format(template_file_dict['WOID'], file_date), 'w') as df:
                 df.write('Data Transfer Directory ={td}\ncd to parent data dir\ncd to model_data'
                       '\nmkdir data_transfer/{w}\nTransfer Commands:\n\ngenome model cwl-pipeline prep-for-transfer --md5sum'
                       ' --directory={td}  --builds {b}\n\n'
