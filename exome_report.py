@@ -125,6 +125,7 @@ for file in metrics_files:
                     add_met = 'MEAN_TARGET_COVERAGE (minimum requirement) : {}'.format(mt_value)
                 else:
                     print('Skipping MEAN_TARGET_COVERAGE')
+                    add_met = 'No other metric required/reviewed for assignment of QC pass/fail judgement'
                     mt_check = True
         elif ad_met_in is 'n':
             print('Skipping addtional metrics')
@@ -260,7 +261,8 @@ for file in metrics_files:
                                                    MEAN_TAR_COV_FAIL=MEAN_TAR_FAIL,
                                                    SEQUENCING_NOTE='\n'.join(seq_notes),
                                                    TRANSFER_DIR=transfer_data_directory,
-                                                   RESULTS_SPREADSHEET=SSheet_outfile))
+                                                   RESULTS_SPREADSHEET=SSheet_outfile,
+                                                   REPORT_FILE = report_outfile))
 
             filename_list.append(file_name)
 
