@@ -64,13 +64,13 @@ def data_dir_check(dir_list, woid, date):
 
 mm_dd_yy = datetime.datetime.now().strftime("%m%d%y")
 
-#Check for metrics file;
+# Check for metrics file;
 if not glob.glob('*.cwl.metrics.*.tsv'):
     sys.exit('cwl.metrics file not found')
 else:
     metrics_files = glob.glob('*.cwl.metrics.*.tsv')
 
-#Check, open, and create template file using Template;
+# Check, open, and create template file using Template;
 if not os.path.isfile('/gscmnt/gc2783/qc/GMSworkorders/reports/exome_report_template.txt'):
     sys.exit('Template file not found.')
 
@@ -85,7 +85,7 @@ for file in metrics_files:
     PCT_20X_check = False
     data_directories = []
 
-    #Ini. outgoing files;
+    # Ini. outgoing files;
     file_name = file.split('.')[0]
     file_date = file.split('.')[-2]
     SSheet_outfile = '{}.cwl.results.{}.tsv'.format(file_name, file_date)
@@ -98,10 +98,10 @@ for file in metrics_files:
     # Interested metrics;
     metrics_tracked = ['PASS_SAMPLES', 'ALN_FAIL']
 
-    #Additional Metrics prompts and input
+    # Additional Metrics prompts and input
     ad_met_check = False
     mt_check = False
-    #Haploid prompt
+    # Haploid prompt
 
     while not ad_met_check:
         ad_met_in = input("\nConfluence link:\nhttps://confluence.ris.wustl.edu/pages/viewpage.action?spaceKey=AD&title=WorkOrder+{}"
@@ -110,7 +110,7 @@ for file in metrics_files:
         if ad_met_in is 'y':
             ad_met_check = True
 
-            #Mean Target prompt
+            # Mean Target prompt
             while not mt_check:
                 mt_in = input('\nPlease enter a MEAN_TARGET_COVERAGE value for {}, or enter 0 to skip metric: '
                               .format(file_name))
@@ -137,35 +137,37 @@ for file in metrics_files:
     for metric in metrics_tracked:
         template_file_dict[metric] = 0
 
-    #Metrics File Open, Check Metrics, Generate 'results', Get Totals;
+    # Metrics File Open, Check Metrics, Generate 'results', Get Totals;
     with open(file, 'r') as fh,open (SSheet_outfile, 'w') as of:
         metrics_dict = csv.DictReader(fh, delimiter='\t')
         header = metrics_dict.fieldnames
-
 
         ofd = csv.DictWriter(of, fieldnames=header, delimiter='\t')
         header.extend(['QC_Status','QC_failed_metrics'])
         ofd.writeheader()
 
-        #Ini. build id and totals for averages in template
+        # Ini. build id and totals for averages in template
         last_succeeded_build_id = []
         tot_pct_tar_bases = tot_pf_aln_bases = tot_pct_usbl_tar = tot_pct_usbl_bait = 0
         tot_mean_tar_cov = tot_pct_exc_off = tot_pct_exc_dup =tot_per_dup = 0
 
         count = 0
         per_dup_count = 0
+        failed_metrics = []
 
         for line in metrics_dict:
 
             template_file_dict['WOID'] = line['WorkOrder']
             data_directories.append(line['data_directory'])
 
+            # default status, overwrite if there are failed metrics.
+            line['QC_failed_metrics'] = 'NA'
 
-            #Check metrics based on Metrics File;
+            # Check metrics based on Metrics File;
             if 'PCT_TARGET_BASES_20X' in line:
                 if float(line['PCT_TARGET_BASES_20X']) < 0.70:
                     line['QC_Status'] = 'Fail'
-                    line['QC_failed_metrics'] = 'PCT_TARGET_BASES_20X'
+                    failed_metrics.append('PCT_TARGET_BASES_20X')
                     template_file_dict['ALN_FAIL'] += 1
                 else:
                     line['QC_Status'] = 'Pass'
@@ -175,11 +177,10 @@ for file in metrics_files:
                 if 'MEAN_TAR_COV_PASS' in metrics_tracked:
                     if 'MEAN_TARGET_COVERAGE' in line:
                         if float(line['MEAN_TARGET_COVERAGE']) < mt_value:
-                            line['QC_failed_metrics'] += 'MEAN_TARGET_COVERAGE'
+                            failed_metrics.append('MEAN_TARGET_COVERAGE')
                             template_file_dict['MEAN_TAR_COV_FAIL'] += 1
                         else:
                             template_file_dict['MEAN_TAR_COV_PASS'] += 1
-
 
                 tot_pct_tar_bases += float(line['PCT_TARGET_BASES_20X'])
                 tot_pct_usbl_tar += float(line['PCT_USABLE_BASES_ON_TARGET'])
@@ -196,7 +197,12 @@ for file in metrics_files:
                     per_dup_count += 1
 
                 last_succeeded_build_id.append(line['last_succeeded_build'])
-                #fill line in results;
+
+                # if there are failed metrics, overwrite NA with failed metrics.
+                if len(failed_metrics) > 0:
+                    line['QC_failed_metrics'] = ','.join(failed_metrics)
+
+                # fill line in results;
                 ofd.writerow(line)
                 count += 1
 
@@ -208,7 +214,7 @@ for file in metrics_files:
 
         if not PCT_20X_check:
 
-            #Prompt for seq notes:
+            # Prompt for seq notes:
             seq_check = False
             while not seq_check:
                 seq_in = input('Would you like to add a SEQUENCING_NOTE? y/n: ')
@@ -242,10 +248,10 @@ for file in metrics_files:
             if not args.nod:
                 transfer_data_directory = data_dir_check(data_directories, template_file_dict['WOID'], mm_dd_yy)
 
-            #write report
+            # write report
             with open(report_outfile, 'w', encoding='utf-8') as fhr:
                 fhr.write(template_file.substitute(WOID=template_file_dict['WOID'],
-                                                   ADDITIONAL_METRICS = add_met,
+                                                   ADDITIONAL_METRICS=add_met,
                                                    SAMPLE_NUMBER=count,
                                                    PASS_SAMPLES=template_file_dict['PASS_SAMPLES'],
                                                    ALN_FAIL=template_file_dict['ALN_FAIL'],
@@ -262,7 +268,7 @@ for file in metrics_files:
                                                    SEQUENCING_NOTE='\n'.join(seq_notes),
                                                    TRANSFER_DIR=transfer_data_directory,
                                                    RESULTS_SPREADSHEET=SSheet_outfile,
-                                                   REPORT_FILE = report_outfile))
+                                                   REPORT_FILE=report_outfile))
 
             filename_list.append(file_name)
 

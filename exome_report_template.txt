@@ -33,4 +33,6 @@ Data Transfer Directory = ${TRANSFER_DIR}
 Additional Comments:
 
 Attachments:
+${REPORT_FILE}
 ${RESULTS_SPREADSHEET}
+
