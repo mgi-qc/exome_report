@@ -164,7 +164,7 @@ for file in metrics_files:
             line['QC_failed_metrics'] = 'NA'
 
             # Check metrics based on Metrics File;
-            if 'PCT_TARGET_BASES_20X' in line:
+            if 'PCT_TARGET_BASES_20X' in line and is_number(line['PCT_TARGET_BASES_20X']):
                 if float(line['PCT_TARGET_BASES_20X']) < 0.70:
                     line['QC_Status'] = 'Fail'
                     failed_metrics.append('PCT_TARGET_BASES_20X')
