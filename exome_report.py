@@ -149,19 +149,18 @@ for file in metrics_files:
         # Ini. build id and totals for averages in template
         last_succeeded_build_id = []
         tot_pct_tar_bases = tot_pf_aln_bases = tot_pct_usbl_tar = tot_pct_usbl_bait = 0
-        tot_mean_tar_cov = tot_pct_exc_off = tot_pct_exc_dup =tot_per_dup = 0
+        tot_mean_tar_cov = tot_pct_exc_off = tot_pct_exc_dup = tot_per_dup = 0
 
         count = 0
         per_dup_count = 0
-        failed_metrics = []
 
         for line in metrics_dict:
+            failed_metrics = []
 
             template_file_dict['WOID'] = line['WorkOrder']
             data_directories.append(line['data_directory'])
 
-            # default status, overwrite if there are failed metrics.
-            line['QC_failed_metrics'] = 'NA'
+
 
             # Check metrics based on Metrics File;
             if 'PCT_TARGET_BASES_20X' in line and is_number(line['PCT_TARGET_BASES_20X']):
@@ -201,6 +200,8 @@ for file in metrics_files:
                 # if there are failed metrics, overwrite NA with failed metrics.
                 if len(failed_metrics) > 0:
                     line['QC_failed_metrics'] = ','.join(failed_metrics)
+                else:
+                    line['QC_failed_metrics'] = 'NA'
 
                 # fill line in results;
                 ofd.writerow(line)
