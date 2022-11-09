@@ -70,11 +70,13 @@ if not glob.glob('*.cwl.metrics.*.tsv'):
 else:
     metrics_files = glob.glob('*.cwl.metrics.*.tsv')
 
+template_text_full_path = '/storage1/fs1/gtac-mgi/Active/Bioinformatics_analysis/mds_contract_gms_compute1/' \
+                          'mds_analysis/bin/qc/cwl_exome_report/exome_report_template.txt'
 # Check, open, and create template file using Template;
-if not os.path.isfile('/gscmnt/gc2783/qc/GMSworkorders/reports/exome_report_template.txt'):
+if not os.path.isfile(template_text_full_path):
     sys.exit('Template file not found.')
 
-with open('/gscmnt/gc2783/qc/GMSworkorders/reports/exome_report_template.txt', 'r', encoding='utf-8') as fh:
+with open(template_text_full_path, 'r', encoding='utf-8') as fh:
     template = fh.read()
     template_file = Template(template)
 
