@@ -105,36 +105,36 @@ for file in metrics_files:
     mt_check = False
     # Haploid prompt
 
-    while not ad_met_check:
-        ad_met_in = input("\nConfluence link:\nhttps://confluence.ris.wustl.edu/pages/viewpage.action?spaceKey=AD&title=WorkOrder+{}"
-                          " \nWould you like to require additional metrics for {}? y/n: ".format(file_name, file_name))
+    # while not ad_met_check:
+    #     ad_met_in = input("\nConfluence link:\nhttps://confluence.ris.wustl.edu/pages/viewpage.action?spaceKey=AD&title=WorkOrder+{}"
+    #                       " \nWould you like to require additional metrics for {}? y/n: ".format(file_name, file_name))
 
-        if ad_met_in is 'y':
-            ad_met_check = True
+    #     if ad_met_in is 'y':
+    #         ad_met_check = True
 
-            # Mean Target prompt
-            while not mt_check:
-                mt_in = input('\nPlease enter a MEAN_TARGET_COVERAGE value for {}, or enter 0 to skip metric: '
-                              .format(file_name))
+    #         # Mean Target prompt
+    #         while not mt_check:
+    #             mt_in = 600
+    #             #input('\nPlease enter a MEAN_TARGET_COVERAGE value for {}, or enter 0 to skip metric: '.format(file_name))
 
-                if not is_number(mt_in) or float(mt_in) < 0:  # not in constratints
-                    print('\nPlease enter a value >= 0 ')
-                elif float(mt_in) > 0:
-                    mt_value = float(mt_in)
-                    mt_check = True
-                    metrics_tracked.extend(['MEAN_TAR_COV_PASS', 'MEAN_TAR_COV_FAIL'])
-                    print('MEAN_TARGET_COVERAGE minimum set to {}'.format(mt_value))
-                    add_met = 'MEAN_TARGET_COVERAGE (minimum requirement) : {}'.format(mt_value)
-                else:
-                    print('Skipping MEAN_TARGET_COVERAGE')
-                    add_met = 'No other metric required/reviewed for assignment of QC pass/fail judgement'
-                    mt_check = True
-        elif ad_met_in is 'n':
-            print('Skipping addtional metrics')
-            add_met = 'No other metric required/reviewed for assignment of QC pass/fail judgement'
-            ad_met_check = True
-        else:
-            print('Please enter y or n')
+    #             if not is_number(mt_in) or float(mt_in) < 0:  # not in constratints
+    #                 print('\nPlease enter a value >= 0 ')
+    #             elif float(mt_in) > 0:
+    #                 mt_value = float(mt_in)
+    #                 mt_check = True
+    #                 metrics_tracked.extend(['MEAN_TAR_COV_PASS', 'MEAN_TAR_COV_FAIL'])
+    #                 print('MEAN_TARGET_COVERAGE minimum set to {}'.format(mt_value))
+    #                 add_met = 'MEAN_TARGET_COVERAGE (minimum requirement) : {}'.format(mt_value)
+    #             else:
+    #                 print('Skipping MEAN_TARGET_COVERAGE')
+    #                 add_met = 'No other metric required/reviewed for assignment of QC pass/fail judgement'
+    #                 mt_check = True
+    #     elif ad_met_in is 'n':
+    #         print('Skipping addtional metrics')
+    #         add_met = 'No other metric required/reviewed for assignment of QC pass/fail judgement'
+    #         ad_met_check = True
+    #     else:
+    #         print('Please enter y or n')
 
     for metric in metrics_tracked:
         template_file_dict[metric] = 0
