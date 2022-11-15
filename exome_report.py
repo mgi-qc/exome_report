@@ -70,8 +70,11 @@ if not glob.glob('*.cwl.metrics.*.tsv'):
 else:
     metrics_files = glob.glob('*.cwl.metrics.*.tsv')
 
-template_text_full_path = '/storage1/fs1/gtac-mgi/Active/Bioinformatics_analysis/mds_contract_gms_compute1/' \
-                          'mds_analysis/bin/qc/cwl_exome_report/exome_report_template.txt'
+# template_text_full_path = '/storage1/fs1/gtac-mgi/Active/Bioinformatics_analysis/mds_contract_gms_compute1/' \
+#                           'mds_analysis/bin/qc/cwl_exome_report/exome_report_template.txt'
+
+template_text_full_path = '/storage1/fs1/gtac-mgi/Active/Bioinformatics_analysis/mds_contract_gms_compute1/mds_analysis/work_orders/2868179/qc_report_test/exome_report_template.txt'
+
 # Check, open, and create template file using Template;
 if not os.path.isfile(template_text_full_path):
     sys.exit('Template file not found.')
@@ -217,7 +220,7 @@ for file in metrics_files:
 
         if not PCT_20X_check:
 
-            # sequencing notes no longer needed
+            #sequencing notes no longer needed for MDS
             #remove sequencing notes from template
 
             # Prompt for seq notes:
