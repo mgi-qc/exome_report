@@ -5,10 +5,6 @@ PCT_TARGET_20X (minimum requirement):  0.70
 Additional Metrics:
 ${ADDITIONAL_METRICS}
 
-
-SEQUENCING_NOTE: https://confluence.ris.wustl.edu/pages/viewpage.action?spaceKey=AD&title=WorkOrder+${WOID}
-${SEQUENCING_NOTE}
-
  
 QC Summary Report:
 Number of samples QC'ed = ${SAMPLE_NUMBER}
