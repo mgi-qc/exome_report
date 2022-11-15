@@ -109,7 +109,7 @@ for file in metrics_files:
         ad_met_in = input("\nConfluence link:\nhttps://confluence.ris.wustl.edu/pages/viewpage.action?spaceKey=AD&title=WorkOrder+{}"
                           " \nWould you like to require additional metrics for {}? y/n: ".format(file_name, file_name))
 
-        if ad_met_in is 'y':
+        if ad_met_in == 'y':
             ad_met_check = True
 
             # Mean Target prompt
@@ -129,7 +129,7 @@ for file in metrics_files:
                     print('Skipping MEAN_TARGET_COVERAGE')
                     add_met = 'No other metric required/reviewed for assignment of QC pass/fail judgement'
                     mt_check = True
-        elif ad_met_in is 'n':
+        elif ad_met_in == 'n':
             print('Skipping addtional metrics')
             add_met = 'No other metric required/reviewed for assignment of QC pass/fail judgement'
             ad_met_check = True
@@ -222,7 +222,7 @@ for file in metrics_files:
             while not seq_check:
                 seq_in = input('Would you like to add a SEQUENCING_NOTE? y/n: ')
 
-                if seq_in is 'y':
+                if seq_in == 'y':
                     print('Enter "return q return" to exit SEQUENCING_NOTE prompt.')
                     seq_check = True
                     seq_notes = []
@@ -233,7 +233,7 @@ for file in metrics_files:
                         else:
                             break
 
-                elif seq_in is 'n':
+                elif seq_in == 'n':
                     seq_check = True
                     seq_notes = ['']
                     print('Skipping SEQUENCING_NOTE')
