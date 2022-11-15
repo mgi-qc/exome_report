@@ -101,11 +101,15 @@ for file in metrics_files:
     template_file_dict = {}
 
     # Interested metrics;
-    metrics_tracked = ['PASS_SAMPLES', 'ALN_FAIL']
+    metrics_tracked = ['PASS_SAMPLES', 'ALN_FAIL', 'MEAN_TAR_COV_PASS', 'MEAN_TAR_COV_FAIL']
+
+    mt_value = 600
+
+    add_met = 'MEAN_TARGET_COVERAGE (minimum requirement) : {}'.format(mt_value)
 
     # Additional Metrics prompts and input
-    ad_met_check = False
-    mt_check = False
+    # ad_met_check = False
+    # mt_check = False
     # Haploid prompt
 
     # while not ad_met_check:
