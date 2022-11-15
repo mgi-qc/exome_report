@@ -217,28 +217,31 @@ for file in metrics_files:
 
         if not PCT_20X_check:
 
+            # sequencing notes no longer needed
+            #remove sequencing notes from template
+
             # Prompt for seq notes:
-            seq_check = False
-            while not seq_check:
-                seq_in = input('Would you like to add a SEQUENCING_NOTE? y/n: ')
+            # seq_check = False
+            # while not seq_check:
+            #     seq_in = input('Would you like to add a SEQUENCING_NOTE? y/n: ')
 
-                if seq_in is 'y':
-                    print('Enter "return q return" to exit SEQUENCING_NOTE prompt.')
-                    seq_check = True
-                    seq_notes = []
-                    while True:
-                        note_line = input()
-                        if note_line != 'q':
-                            seq_notes.append(note_line)
-                        else:
-                            break
+            #     if seq_in is 'y':
+            #         print('Enter "return q return" to exit SEQUENCING_NOTE prompt.')
+            #         seq_check = True
+            #         seq_notes = []
+            #         while True:
+            #             note_line = input()
+            #             if note_line != 'q':
+            #                 seq_notes.append(note_line)
+            #             else:
+            #                 break
 
-                elif seq_in is 'n':
-                    seq_check = True
-                    seq_notes = ['']
-                    print('Skipping SEQUENCING_NOTE')
-                else:
-                    print('Please enter y or n')
+            #     elif seq_in is 'n':
+            #         seq_check = True
+            #         seq_notes = ['']
+            #         print('Skipping SEQUENCING_NOTE')
+            #     else:
+            #         print('Please enter y or n')
 
             if 'MEAN_TAR_COV_PASS' in template_file_dict:
                 MEAN_TAR_PASS = template_file_dict['MEAN_TAR_COV_PASS']
@@ -268,7 +271,7 @@ for file in metrics_files:
                                                    PERCENT_DUPLICATION=avg_per_dup,
                                                    MEAN_TAR_COV_PASS=MEAN_TAR_PASS,
                                                    MEAN_TAR_COV_FAIL=MEAN_TAR_FAIL,
-                                                   SEQUENCING_NOTE='\n'.join(seq_notes),
+                                                #    SEQUENCING_NOTE='\n'.join(seq_notes),
                                                    TRANSFER_DIR=transfer_data_directory,
                                                    RESULTS_SPREADSHEET=SSheet_outfile,
                                                    REPORT_FILE=report_outfile))
