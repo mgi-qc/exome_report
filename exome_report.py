@@ -70,8 +70,11 @@ if not glob.glob('*.cwl.metrics.*.tsv'):
 else:
     metrics_files = glob.glob('*.cwl.metrics.*.tsv')
 
-template_text_full_path = '/storage1/fs1/gtac-mgi/Active/Bioinformatics_analysis/mds_contract_gms_compute1/' \
-                          'mds_analysis/bin/qc/cwl_exome_report/exome_report_template.txt'
+# template_text_full_path = '/storage1/fs1/gtac-mgi/Active/Bioinformatics_analysis/mds_contract_gms_compute1/' \
+#                           'mds_analysis/bin/qc/cwl_exome_report/exome_report_template.txt'
+
+template_text_full_path = '/storage1/fs1/gtac-mgi/Active/Bioinformatics_analysis/mds_contract_gms_compute1/mds_analysis/work_orders/2868179/qc_report_test/exome_report_template.txt'
+
 # Check, open, and create template file using Template;
 if not os.path.isfile(template_text_full_path):
     sys.exit('Template file not found.')
@@ -217,28 +220,31 @@ for file in metrics_files:
 
         if not PCT_20X_check:
 
+            #sequencing notes no longer needed for MDS
+            #remove sequencing notes from template
+
             # Prompt for seq notes:
-            seq_check = False
-            while not seq_check:
-                seq_in = input('Would you like to add a SEQUENCING_NOTE? y/n: ')
+            # seq_check = False
+            # while not seq_check:
+            #     seq_in = input('Would you like to add a SEQUENCING_NOTE? y/n: ')
 
-                if seq_in is 'y':
-                    print('Enter "return q return" to exit SEQUENCING_NOTE prompt.')
-                    seq_check = True
-                    seq_notes = []
-                    while True:
-                        note_line = input()
-                        if note_line != 'q':
-                            seq_notes.append(note_line)
-                        else:
-                            break
+            #     if seq_in is 'y':
+            #         print('Enter "return q return" to exit SEQUENCING_NOTE prompt.')
+            #         seq_check = True
+            #         seq_notes = []
+            #         while True:
+            #             note_line = input()
+            #             if note_line != 'q':
+            #                 seq_notes.append(note_line)
+            #             else:
+            #                 break
 
-                elif seq_in is 'n':
-                    seq_check = True
-                    seq_notes = ['']
-                    print('Skipping SEQUENCING_NOTE')
-                else:
-                    print('Please enter y or n')
+            #     elif seq_in is 'n':
+            #         seq_check = True
+            #         seq_notes = ['']
+            #         print('Skipping SEQUENCING_NOTE')
+            #     else:
+            #         print('Please enter y or n')
 
             if 'MEAN_TAR_COV_PASS' in template_file_dict:
                 MEAN_TAR_PASS = template_file_dict['MEAN_TAR_COV_PASS']
@@ -268,7 +274,7 @@ for file in metrics_files:
                                                    PERCENT_DUPLICATION=avg_per_dup,
                                                    MEAN_TAR_COV_PASS=MEAN_TAR_PASS,
                                                    MEAN_TAR_COV_FAIL=MEAN_TAR_FAIL,
-                                                   SEQUENCING_NOTE='\n'.join(seq_notes),
+                                                #    SEQUENCING_NOTE='\n'.join(seq_notes),
                                                    TRANSFER_DIR=transfer_data_directory,
                                                    RESULTS_SPREADSHEET=SSheet_outfile,
                                                    REPORT_FILE=report_outfile))
