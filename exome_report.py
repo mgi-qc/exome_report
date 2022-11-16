@@ -3,7 +3,6 @@
 
 __author__ = 'Thomas Antonacci'
 
-
 import csv
 import os
 import sys
@@ -25,39 +24,56 @@ def is_number(s):
     except ValueError:
         return False
 
+DT_TRANSFER_DIR = '/storage1/fs1/gtac-mgi/Active/Bioinformatics_analysis/mds_contract_gms_compute1/mds_dt'
+dt_dir_status = 'NA'
 
-def data_dir_check(dir_list, woid, date):
+#original function definition
+# def data_dir_check(dir_list, woid, date):
+def data_dir_check(woid, date):
     """Create and return transfer directory if 'model' found in dir path."""
 
     # return NA if no transfer dir found
-    transfer_dir = 'NA'
+    # transfer_dir = 'NA'
 
+    #variable for new DT directory
+    transfer_dir = os.path.join(DT_TRANSFER_DIR, '{}_{}/'.format(woid, date))
+
+    #check if it exists
+    #if exists, add note to helper file
+    if os.path.isdir(transfer_dir):
+        dt_dir_status = 'DT directory exists'
+        return transfer_dir
+    
+    #if doesn't exist, mkdir
+    os.mkdir(transfer_dir) 
+         
+    #orginal function removed for MDS
     # iterate over data dirs
-    for directory in dir_list:
-        # if model found, create transfer dir and return path
-        if os.path.isdir(directory) and 'model' in directory:
+    # for directory in dir_list:
+    #     # if model found, create transfer dir and return path
+    #     if os.path.isdir(directory) and 'model' in directory:
 
-            dir_path_items = directory.split('/')
+    #         dir_path_items = directory.split('/')
 
-            for no, d in enumerate(dir_path_items):
+    #         for no, d in enumerate(dir_path_items):
 
-                if 'model' in d:
+    #             if 'model' in d:
 
-                    model_directory = '/'.join(dir_path_items[:no + 1]) + '/'
-                    transfer_dir = os.path.join(model_directory, 'data_transfer/{}_{}/'.format(woid, date))
+    #                 model_directory = '/'.join(dir_path_items[:no + 1]) + '/'
+    #                 transfer_dir = os.path.join(model_directory, 'data_transfer/{}_{}/'.format(woid, date))
 
-                    if os.path.isdir(transfer_dir):
-                        print('Transfer Directory already exists: {}'.format(transfer_dir))
-                        return 'NA'
+    #                 if os.path.isdir(transfer_dir):
+    #                     print('Transfer Directory already exists: {}'.format(transfer_dir))
+    #                     return 'NA'
 
-                    if os.path.isdir(model_directory) and not os.path.isdir(transfer_dir):
-                        try:
-                            os.mkdir(transfer_dir)
-                        except OSError:
-                            # raise OSError("Can't create destination directory {}!".format(transfer_dir))
-                            return 'NA'
-                        print('Data transfer directory created:\n{}'.format(transfer_dir))
-                        return transfer_dir
+    #                 if os.path.isdir(model_directory) and not os.path.isdir(transfer_dir):
+    #                     try:
+    #                         os.mkdir(transfer_dir)
+    #                     except OSError:
+    #                         # raise OSError("Can't create destination directory {}!".format(transfer_dir))
+    #                         return 'NA'
+    #                     print('Data transfer directory created:\n{}'.format(transfer_dir))
+    #                     return transfer_dir
 
     return transfer_dir
 
@@ -70,10 +86,8 @@ if not glob.glob('*.cwl.metrics.*.tsv'):
 else:
     metrics_files = glob.glob('*.cwl.metrics.*.tsv')
 
-# template_text_full_path = '/storage1/fs1/gtac-mgi/Active/Bioinformatics_analysis/mds_contract_gms_compute1/' \
-#                           'mds_analysis/bin/qc/cwl_exome_report/exome_report_template.txt'
-
-template_text_full_path = '/storage1/fs1/gtac-mgi/Active/Bioinformatics_analysis/mds_contract_gms_compute1/mds_analysis/work_orders/2868179/qc_report_test/exome_report_template.txt'
+template_text_full_path = '/storage1/fs1/gtac-mgi/Active/Bioinformatics_analysis/mds_contract_gms_compute1/' \
+                          'mds_analysis/bin/qc/cwl_exome_report/exome_report_template.txt'
 
 # Check, open, and create template file using Template;
 if not os.path.isfile(template_text_full_path):
@@ -259,7 +273,7 @@ for file in metrics_files:
 
             transfer_data_directory = 'NA'
             if not args.nod:
-                transfer_data_directory = data_dir_check(data_directories, template_file_dict['WOID'], mm_dd_yy)
+                transfer_data_directory = data_dir_check(template_file_dict['WOID'], mm_dd_yy)
 
             # write report
             with open(report_outfile, 'w', encoding='utf-8') as fhr:
@@ -288,13 +302,18 @@ for file in metrics_files:
             builds = ','.join(last_succeeded_build_id)
 
             with open('{}.Data_transfer_help.{}.txt'.format(template_file_dict['WOID'], file_date), 'w') as df:
-                df.write('Data Transfer Directory ={td}\ncd to parent data dir\ncd to model_data'
+                df.write('Data Transfer Directory Status = {s}\n'
+                      'Data Transfer Directory ={td}\ncd to parent data dir\ncd to model_data'
                       '\nmkdir data_transfer/{w}\nTransfer Commands:\n\ngenome model cwl-pipeline prep-for-transfer --md5sum'
                       ' --directory={td}  --builds {b}\n\n'
                       'genome model cwl-pipeline prep-for-transfer --md5sum'
-                      ' --directory={td} model_groups.project.id={w}\n'.format(td=transfer_data_directory, w=template_file_dict['WOID'], b=builds,))
-  
+                      ' --directory={td} model_groups.project.id={w}\n'.format(td=transfer_data_directory, w=template_file_dict['WOID'], s = dt_dir_status, b=builds,))
+
+            if dt_dir_status == 'NA':
+                print('Running: genome model cwl-pipeline prep-for-transfer --md5sum')
+                subprocess.run(['genome','model', 'cwl-pipeline', 'prep-for-transfer', '--md5sum', f'--directory={transfer_data_directory}', '--builds', builds])
             print('------------------------')
+        
         else:
             print('\nNo report generated for {}; PCT_TARGET_BASES_20X not found.'.format(file))
             print('------------------------')
