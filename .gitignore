@@ -106,3 +106,13 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+#test files
+/temp_test_files/
+/SS_AUTO_testfiles/
+
+#file counting 
+scratch.py
+
+
+
